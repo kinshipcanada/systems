@@ -1,50 +1,46 @@
 import { Donation } from "../donation/Donation";
 import { Donor } from "../donors/Donor";
-import { Event } from "../events/Event";
+import { KinshipEvent } from "../events/KinshipEvent";
 import { EventTypes } from "../events/event_types";
 import { CountryList } from "../utility_classes/country_list";
 import { DeliveryMethod } from "./delivery_methods";
 import { NotificationType } from "./notification_types";
 import { Templates } from "./Templates";
+import { v4 as uuidv4 } from 'uuid';
+import { KinshipError } from "../errors/KinshipError";
 const twilio = require('twilio')
 const sendgrid = require('@sendgrid/mail')
 require('dotenv').config();
 
-export class KinshipNotification extends Event {
+export class KinshipNotification extends KinshipEvent {
+    notification_id = uuidv4()
     notification_type: NotificationType;
     donor: Donor;
-    recipient_email: string;
-    recipient_phone_number: number;
-    recipient_country: CountryList;
     donation: Donation
-
+    
     constructor ( 
-        id: string, 
         notification_type: NotificationType, 
         donation: Donation,
-        donor?: Donor,
-        recipient_email?: string, 
-        recipient_phone_number?: number, 
-        recipient_country?: CountryList,
+        donor: Donor,
     ) {
-        super(id, EventTypes.NOTIFICATION)
+        const notification_id = uuidv4()
+        
+        super(notification_id, EventTypes.NOTIFICATION)
 
+        this.notification_id = notification_id;
         this.notification_type = notification_type;
         this.donation = donation
         this.donor = donor
-
-        if (!donor && (!(recipient_email && recipient_country)) && (!(recipient_phone_number && recipient_country))) {
-            throw new Error(`Could not create new notification ${id}: please provide a donor object, or a phone + country, or a email + country`)
-        }
     }
 
     async send(method: DeliveryMethod) {
         /**
-         * Sends notification out
+         * @description Sends notification out, by either phone or email.
          */
         
-        if (this.notification_type == NotificationType.RECEIPT_AVAILABLE && this.recipient_country != CountryList.CANADA) {
-            throw new Error("Can only issue receipts to Canadians")
+        if (this.notification_type == NotificationType.RECEIPT_AVAILABLE && this.donor.address.country != CountryList.CANADA) {
+            new KinshipError("Can only issue receipts to Canadians", "/src/classes/notifications", "send", true)
+            return
         }
 
         const template = Templates(this.notification_type, this.donor, this.donation)

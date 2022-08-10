@@ -1,16 +1,15 @@
 import { Donation } from "../donation/Donation";
 import { Donor } from "../donors/Donor";
-import { KinshipError } from "../errors/Error";
 import { CountryList } from "../utility_classes/country_list";
 import { NotificationType } from "./notification_types";
 
-export interface Template {
+export interface NotificationTemplate {
     email_subject: string;
     email_body: string;
     sms_friendly_message: string;
 }
 
-export function Templates( notification_type: NotificationType, donor: Donor, donation: Donation ) : Template {
+export function Templates( notification_type: NotificationType, donor: Donor, donation: Donation ) : NotificationTemplate {
 
     switch (notification_type) {
         case NotificationType.DONATION_MADE: {

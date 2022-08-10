@@ -20,6 +20,6 @@ const donor = new Donor({
     }
 }, "69696969696")
 
-const donation = new Donation(donor, 50000, CountryList.CANADA, 50000, true, 0, 0, null)
-const notif = new KinshipNotification("69669", NotificationType.DONATION_MADE, donation, donor)
-notif.send(DeliveryMethod.EMAIL)
+// const donation = new Donation(donor, 50000, CountryList.CANADA, 50000, true, 0, 0, null)
+// const notif = new KinshipNotification(NotificationType.DONATION_MADE, donation, donor)
+// notif.send(DeliveryMethod.EMAIL)

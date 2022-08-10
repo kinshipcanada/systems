@@ -3,7 +3,7 @@ import { EventTypes } from "./event_types";
 /**
  * Base event classes. All events must adhere to this
  */
-export class Event {
+export class KinshipEvent {
     id: string;
     event_type: EventTypes
 

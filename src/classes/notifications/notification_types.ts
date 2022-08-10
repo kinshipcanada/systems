@@ -4,5 +4,6 @@ export const enum NotificationType {
     RECEIPT_AVAILABLE,
     REFUND_PROCESSING,
     REFUND_ISSUED,
+    REPORT_GENERATED,
     DONATION_SENT
 }
