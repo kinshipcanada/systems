@@ -1,4 +1,4 @@
-export const enum country_list {
+export const enum CountryList {
     CANADA = 'ca',
     UNITED_STATES = 'us'
 }

@@ -12,7 +12,7 @@ export class Event {
         this.event_type = event_type;
     }
 
-    log_event() {
-        console.log('logged')
+    log_event(custom_data) {
+        console.log(`logged; ${custom_data}`)
     }
 }
