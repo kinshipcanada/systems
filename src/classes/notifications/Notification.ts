@@ -22,8 +22,8 @@ export class KinshipNotification extends KinshipEvent {
         notification_type: NotificationType, 
         donation: Donation,
         donor: Donor,
+        notification_id = uuidv4()
     ) {
-        const notification_id = uuidv4()
         
         super(notification_id, EventTypes.NOTIFICATION)
 
