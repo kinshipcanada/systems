@@ -1,3 +1,4 @@
+import { Cart } from "./classes/cart/Cart";
 import { Donation } from "./classes/donation/Donation";
 import { Donor } from "./classes/donors/Donor";
 import { DeliveryMethod } from "./classes/notifications/delivery_methods";
@@ -20,6 +21,8 @@ const donor = new Donor({
     }
 }, "69696969696")
 
-// const donation = new Donation(donor, 50000, CountryList.CANADA, 50000, true, 0, 0, null)
+const car = new Cart([], 50000, false)
+
+const donation = new Donation(donor, 50000, CountryList.CANADA, 50000, car, false, 0, 1480, "pi_3LUWxgBq7b4L3fUm3Etqb1Ey")
 // const notif = new KinshipNotification(NotificationType.DONATION_MADE, donation, donor)
 // notif.send(DeliveryMethod.EMAIL)

@@ -15,6 +15,7 @@
   "dependencies": {
     "@sendgrid/mail": "^7.7.0",
     "dotenv": "^16.0.1",
+    "stripe": "^10.1.0",
     "twilio": "^3.80.0",
     "uuid": "^8.3.2"
   }
