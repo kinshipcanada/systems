@@ -1,4 +1,4 @@
-import { StripeTags } from "../../stripe";
+import { StripeTags } from "../../stripe/interfaces";
 import { Cart } from "../cart/Cart";
 import { Donor } from "../donors/Donor";
 import { CountryList } from "../utility_classes/country_list";
@@ -34,6 +34,7 @@ export class Donation {
         fees_covered: boolean,
         fees_paid_in_cents: number,
         fees_charged_by_stripe: number,
+        fetch_object_from_stripe: boolean = true,
         stripe_payment_intent_id: string,
         stripe_charge_id?: string,
         stripe_balance_transaction_id?: string,
@@ -50,6 +51,10 @@ export class Donation {
             payment_intent_id: stripe_payment_intent_id,
             charge_id: stripe_charge_id,
             balance_transaction_id: stripe_balance_transaction_id,
+        }
+
+        if (fetch_object_from_stripe) { 
+            this.fetch_donation_from_stripe()
         }
     }
 

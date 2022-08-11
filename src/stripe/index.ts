@@ -6,21 +6,12 @@ import { KinshipNotification } from "../classes/notifications/Notification";
 import { NotificationType } from "../classes/notifications/notification_types";
 import { kinship_config } from "../config";
 import { PaymentMethods } from "./enums";
-import { raw_stripe_transaction_object } from "./interfaces";
+import { raw_stripe_transaction_object, StripeTags } from "./interfaces";
 const Stripe = require('stripe');
 const dotenv = require('dotenv')
 dotenv.config();
 
 const stripe_client = Stripe(kinship_config.PRODUCTION_MODE ? process.env.STRIPE_LIVE_API_KEY : process.env.STRIPE_TEST_API_KEY)
-
-/**
- * @section interfaces: these form templates for responses from stripe
- */
-export interface StripeTags {
-    payment_intent_id: string,
-    charge_id?: string,
-    balance_transaction_id?: string,
-}
 
 /**
  * 
@@ -43,6 +34,10 @@ export async function fetch_customer_object(stripe_customer_id: string) {
     return stripe_client.customers.retrieve(stripe_customer_id)
 }
 
+export async function fetch_specific_payment_method(payment_method_id: string) {
+    return stripe_client.paymentMethods.retrieve(payment_method_id)
+}
+
 export async function fetch_payment_methods(stripe_customer_id: string, payment_method_type: PaymentMethods = PaymentMethods.CARD) {
     return stripe_client.stripe.paymentMethods.retrieve(
         stripe_customer_id,
@@ -63,6 +58,8 @@ export async function fetch_donation_from_stripe(stripe_tags: StripeTags, full_c
         payment_intent_object: null,
         charge_object: null,
         balance_transaction_object: null,
+        customer: null,
+        payment_method: null
     }
 
     if (!full_collection_mode) {
@@ -71,18 +68,24 @@ export async function fetch_donation_from_stripe(stripe_tags: StripeTags, full_c
         
         if (stripe_tags.charge_id != null) { stripe_promises.push(fetch_charge_object(stripe_tags.charge_id)) }
         if (stripe_tags.balance_transaction_id != null) { stripe_promises.push(fetch_balance_transaction_object(stripe_tags.balance_transaction_id)) }
-    
+        if (stripe_tags.payment_method_id != null) { stripe_promises.push(fetch_specific_payment_method(stripe_tags.payment_method_id)) }
+        if (stripe_tags.customer_id != null) { stripe_promises.push(fetch_customer_object(stripe_tags.customer_id)) }
+
     } else {
         const payment_intent_object = await fetch_payment_intent_object(stripe_tags.payment_intent_id)
         const charge_object = payment_intent_object.charges.data[0]
 
         stripe_promises.push(fetch_balance_transaction_object(charge_object.balance_transaction))
+        stripe_promises.push(fetch_specific_payment_method(charge_object.payment_method))
+        stripe_promises.push(fetch_customer_object(charge_object.customer))
 
         raw_data_from_stripe.payment_intent_object = payment_intent_object
         raw_data_from_stripe.charge_object = charge_object
 
         stripe_tags.charge_id = charge_object.id
         stripe_tags.balance_transaction_id = charge_object.balance_transaction
+        stripe_tags.customer_id = charge_object.customer
+        stripe_tags.payment_method_id = charge_object.payment_method
     }
 
     const stripe_results = await Promise.all(stripe_promises)
@@ -97,23 +100,38 @@ export async function fetch_donation_from_stripe(stripe_tags: StripeTags, full_c
         }
 
         if (result.object == 'balance_transaction') {
-            console.log(result)
             raw_data_from_stripe.balance_transaction_object = result
+        }
+
+        if (result.object == 'customer') {
+            raw_data_from_stripe.customer = result
+        }
+
+        if (result.object == 'payment_method') {
+            raw_data_from_stripe.payment_method = result
         }
     }
 
     return [stripe_tags, raw_data_from_stripe]
 }
 
-export function format_stripe_objects(raw_data_from_stripe: raw_stripe_transaction_object) {
+export function key_data_from_stripe_objects(raw_data_from_stripe: raw_stripe_transaction_object) {
 
     return {
         "payment_intent_id": raw_data_from_stripe.payment_intent_object["id"],
         "charge_id": raw_data_from_stripe.charge_object["id"],
         "balance_transaction_id": raw_data_from_stripe.balance_transaction_object["id"],
-        
+        "amount_received": raw_data_from_stripe.charge_object["amount_captured"],
+        "amount_refunded": raw_data_from_stripe.charge_object["amount_refunded"],
+        "date_charged": raw_data_from_stripe.charge_object["created"],
+        "currency": raw_data_from_stripe.charge_object["currency"],
+        "stripe_customer_id": raw_data_from_stripe.charge_object["customer"],
+        "payment_method_id": raw_data_from_stripe.charge_object["payment_method"],
+        "fee_paid": raw_data_from_stripe.balance_transaction_object["fee"],
+        "net_received_by_kinship": raw_data_from_stripe.balance_transaction_object["net"],
+        "exchange_rate": raw_data_from_stripe.balance_transaction_object["exchange_rate"]
     }
-    return raw_data_from_stripe
+
 }
 
 let tags: StripeTags = {
@@ -122,7 +140,9 @@ let tags: StripeTags = {
 
 fetch_donation_from_stripe(tags, true).then((val)=>{
     tags = val[0]
-    console.log(format_stripe_objects(val[1]))
+    console.log(val[1])
+
+    console.log(key_data_from_stripe_objects(val[1]))
 })
 
 /**
