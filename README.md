@@ -18,3 +18,4 @@ This folder contains Kinship Canada's internal code, including it's API, report 
 ## To Do
 - [ ] Add full state list
 - [ ] Add custom log info
+- [ ] Add phone number validation from stripe
