@@ -40,7 +40,7 @@ export default async function fetch_donation( donation_id : string ) : Promise<D
             throw new Error("Invalid payment intent id")
         }
 
-    } else if (donation_id.substring(0, 4) == "don_") {
+    } else if (donation_id.substring(0, 9) == "donation_") {
 
         return null
 
