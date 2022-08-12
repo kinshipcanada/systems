@@ -11,6 +11,6 @@ export class KinshipError extends KinshipEvent {
         if (log_error) {
             this.log_event(`Error at function ${function_name} in file ${file_name}: ${message}`)
         }
-        throw new Error(`Error at function ${function_name} in file ${file_name}: ${message}`)
+        throw new Error(message)
     }
 }

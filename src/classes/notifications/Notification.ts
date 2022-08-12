@@ -13,7 +13,7 @@ const sendgrid = require('@sendgrid/mail')
 require('dotenv').config();
 
 export class KinshipNotification extends KinshipEvent {
-    notification_id = uuidv4()
+    notification_id;
     notification_type: NotificationType;
     donor: Donor;
     donation: Donation
