@@ -1,5 +1,6 @@
 import { AmountForRegion, Cause } from "../utility_classes/interfaces"
 import { RegionList } from "../utility_classes/region_list"
+import { CartInterface } from "./CartInterface"
 
 export class Cart {
 
@@ -34,5 +35,12 @@ export class Cart {
         }
 
         return
+    }
+
+    public format_cart_for_upload(): CartInterface {
+        return {
+            causes: [],
+            regions: []
+        }
     }
 }
