@@ -5,7 +5,7 @@ This folder contains Kinship Canada's internal code, including it's API, report 
 ## Folder Structure
 *Tentative, changes quickly*
 
-- `api`: (EMPTY) contains the api system allowing the website to interface with the system
+- `api`: contains the api system allowing the website to interface with the system
 - `classes`: main folders containing base objects that the system builds off of
     - `cart`: donation cart object, including functions to see how much to send to each region etc
     - `donation`: main donation object. Encapsulates donor and cart objects
@@ -16,8 +16,14 @@ This folder contains Kinship Canada's internal code, including it's API, report 
     - `utility_classes`: helpers
 - `stripe`: stripe engine and helper classes, including building objects from stripe
 
+## API Reference
+
+**Get Requests (e.g. fetching donations, donors, etc)**
+- **GET** `/donation/[id]` - Fetches an individual donation from it's Kinship ID, Stripe charge ID, or Stripe payment intent id
+- **GET** `/donation/batch/[list_of_ids]` - Fetches a number of donations. ID types do not need to be the same. Uses promise.all to batch donations (effectively a `/donation/id` wrapper).
+
 ## To Do
 - [ ] Add full state list
 - [ ] Add custom log info
 - [ ] Add phone number validation from stripe
-- [ ] Allow donation retrieval from charge id + payment id
+- [x] Allow donation retrieval from charge id + payment id
