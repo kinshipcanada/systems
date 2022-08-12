@@ -1,6 +1,13 @@
 # Kinship's Internal Systems
 
-This folder contains Kinship Canada's internal code, including it's API, report generation, and processing systems.
+This folder contains Kinship Canada's internal code, including it's API, report generation, and processing systems. Kinship Canada is a CRA-registered charity, and therefore has obligations to maintain reporting standards, generate CRA-eligible tax receipts, etc. This codebase is where the majority of the backend code lies, including the internal API.
+
+It's open source to allow other charities to easily replicate the functionality without needing to write it from scratch. Together, Kinship's systems offer donors;
+- User dashboard to view donations, manage billing, and more
+- Recurring and one time donations
+- Ways to see where their donation has gona
+
+Charity should be powered by good software.
 
 ## Folder Structure
 *Tentative, changes quickly*
@@ -27,3 +34,5 @@ This folder contains Kinship Canada's internal code, including it's API, report 
 - [ ] Add custom log info
 - [ ] Add phone number validation from stripe
 - [x] Allow donation retrieval from charge id + payment id
+- [ ] Implement fetching donations from Kinship donation ID
+- [ ] API key system?

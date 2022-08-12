@@ -77,3 +77,7 @@ api_router.get("/donation/batch/:list_of_donation_ids",  async (req: Request, re
         res.status(500).send(error.message);
     }
 });
+
+api_router.get("/donor/:id/payment_methods/list")
+
+api_router.get("/donor/:id/donations")
