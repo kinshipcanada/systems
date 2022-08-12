@@ -160,16 +160,6 @@ export function build_donation_from_raw_stripe_data(stripe_data: raw_stripe_tran
     return donation
 }
 
-let tags: StripeTags = {
-    payment_intent_id: "pi_3LUWxgBq7b4L3fUm3Etqb1Ey"
-}
-
-fetch_donation_from_stripe(tags, true).then((val)=>{
-    tags = val[0]
-
-    console.log(build_donation_from_raw_stripe_data(val[1]))
-})
-
 /**
  * @section push functions - these update data on stripe
  */
