@@ -1,3 +1,4 @@
+import Stripe from "stripe";
 import { StripeTags } from "../../stripe/interfaces";
 import { Cart } from "../cart/Cart";
 import { Donor } from "../donors/Donor";
@@ -23,6 +24,8 @@ export class Donation {
     stripe_tags: StripeTags;
     recurring_donation: boolean;
 
+    payment_method: Stripe.PaymentMethod
+
     cart: Cart;
 
     constructor ( 
@@ -34,10 +37,11 @@ export class Donation {
         fees_covered: boolean,
         fees_paid_in_cents: number,
         fees_charged_by_stripe: number,
-        fetch_object_from_stripe: boolean = true,
+        payment_method: Stripe.PaymentMethod,
         stripe_payment_intent_id: string,
         stripe_charge_id?: string,
         stripe_balance_transaction_id?: string,
+        stripe_customer_id?: string,
     ) {
         this.donor = donor;
         this.amount_in_cents = amount_in_cents;
@@ -47,15 +51,14 @@ export class Donation {
         this.fees_paid_in_cents = fees_paid_in_cents;
         this.fees_charged_by_stripe = fees_charged_by_stripe;
         this.cart = cart
+        this.payment_method = payment_method
         this.stripe_tags = {
             payment_intent_id: stripe_payment_intent_id,
             charge_id: stripe_charge_id,
             balance_transaction_id: stripe_balance_transaction_id,
+            customer_id: stripe_customer_id
         }
 
-        if (fetch_object_from_stripe) { 
-            this.fetch_donation_from_stripe()
-        }
     }
 
     async fetch_donation_from_stripe(format_data: boolean = true, full_collection_mode: boolean = true) {

@@ -19,3 +19,4 @@ This folder contains Kinship Canada's internal code, including it's API, report 
 - [ ] Add full state list
 - [ ] Add custom log info
 - [ ] Add phone number validation from stripe
+- [ ] Allow donation retrieval from charge id + payment id

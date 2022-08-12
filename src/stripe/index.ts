@@ -1,3 +1,4 @@
+import { Cart } from "../classes/cart/Cart";
 import { Donation } from "../classes/donation/Donation";
 import { Donor } from "../classes/donors/Donor";
 import { KinshipError } from "../classes/errors/KinshipError";
@@ -116,23 +117,47 @@ export async function fetch_donation_from_stripe(stripe_tags: StripeTags, full_c
     return [stripe_tags, raw_data_from_stripe]
 }
 
-export function build_objects_from_raw_stripe_data(raw_data_from_stripe: raw_stripe_transaction_object) {
+export function build_donation_from_raw_stripe_data(stripe_data: raw_stripe_transaction_object) {
     const donor = new Donor({
-        first_name: raw_data_from_stripe.charge_object.metadata.custom_first_name ? raw_data_from_stripe.charge_object.metadata.custom_first_name : raw_data_from_stripe.customer.name.split(" ")[0],
-        last_name: raw_data_from_stripe.charge_object.metadata.custom_last_name ? raw_data_from_stripe.charge_object.metadata.custom_last_name : raw_data_from_stripe.customer.name.split(" ").slice(-1)[0],
-        stripe_cus_id: raw_data_from_stripe.customer.id,
-        email: raw_data_from_stripe.customer.email,
-        phone_number: parseInt(raw_data_from_stripe.customer.phone),
+        first_name: stripe_data.charge_object.metadata.custom_first_name ? stripe_data.charge_object.metadata.custom_first_name : stripe_data.customer.name.split(" ")[0],
+        last_name: stripe_data.charge_object.metadata.custom_last_name ? stripe_data.charge_object.metadata.custom_last_name : stripe_data.customer.name.split(" ").slice(-1)[0],
+        stripe_cus_id: stripe_data.customer.id,
+        email: stripe_data.customer.email,
+        phone_number: parseInt(stripe_data.customer.phone),
         address: {
-            line_address: raw_data_from_stripe.customer.address.line1,
-            postal_code: raw_data_from_stripe.customer.address.postal_code,
-            city: raw_data_from_stripe.customer.address.city,
-            state: raw_data_from_stripe.customer.address.state,
-            country: raw_data_from_stripe.customer.address.country == "Canada" ? CountryList.CANADA : raw_data_from_stripe.customer.address.country == "United States" ? CountryList.UNITED_STATES : CountryList.UNDEFINED,
+            line_address: stripe_data.customer.address.line1,
+            postal_code: stripe_data.customer.address.postal_code,
+            city: stripe_data.customer.address.city,
+            state: stripe_data.customer.address.state,
+            country: stripe_data.customer.address.country == "Canada" ? CountryList.CANADA : stripe_data.customer.address.country == "United States" ? CountryList.UNITED_STATES : CountryList.UNDEFINED,
         }
-    }, raw_data_from_stripe.charge_object.metadata.user_id ? raw_data_from_stripe.charge_object.metadata.user_id : null)
+    }, stripe_data.charge_object.metadata.user_id ? stripe_data.charge_object.metadata.user_id : null)
 
-    // const donation = new Donation(donor, a)
+    const amount_in_cents = stripe_data.charge_object.amount_captured
+    const native_currency = stripe_data.charge_object.currency == "cad" ? CountryList.CANADA : stripe_data.charge_object.currency == "usd" ? CountryList.UNITED_STATES : CountryList.UNDEFINED
+    const amount_captured = stripe_data.charge_object.amount_captured
+    const fees_covered = stripe_data.charge_object.metadata.fees_covered ? Boolean(stripe_data.charge_object.metadata.fees_covered) : false
+    const fees_paid_in_cents = fees_covered ? stripe_data.charge_object.amount_captured / 1.029 : 0
+    const fees_charged_by_stripe = stripe_data.balance_transaction_object.fee
+    const cart = new Cart([], stripe_data.charge_object.amount_captured, fees_covered)
+    
+    const donation = new Donation(
+        donor, 
+        amount_in_cents, 
+        native_currency,
+        amount_captured,
+        cart,
+        fees_covered,
+        fees_paid_in_cents,
+        fees_charged_by_stripe,
+        stripe_data.payment_method,
+        stripe_data.payment_intent_object.id,
+        stripe_data.charge_object.id,
+        stripe_data.balance_transaction_object.id,
+        stripe_data.customer.id
+    )
+
+    return donation
 }
 
 let tags: StripeTags = {
@@ -141,9 +166,8 @@ let tags: StripeTags = {
 
 fetch_donation_from_stripe(tags, true).then((val)=>{
     tags = val[0]
-    console.log(val[1])
 
-    console.log(build_objects_from_raw_stripe_data(val[1]))
+    console.log(build_donation_from_raw_stripe_data(val[1]))
 })
 
 /**
