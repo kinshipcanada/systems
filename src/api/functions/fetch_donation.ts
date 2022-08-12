@@ -3,6 +3,7 @@ import { KinshipError } from "../../classes/errors/KinshipError";
 import { build_donation_from_raw_stripe_data, fetch_donation_from_stripe } from "../../stripe";
 import { StripeTags } from "../../stripe/interfaces";
 import { isValidUUIDV4 as verify_uuid } from 'is-valid-uuid-v4';
+import { upload_donation_to_database } from "../../database";
 
 export default async function fetch_donation( donation_id : string ) : Promise<Donation> {
     
@@ -14,6 +15,8 @@ export default async function fetch_donation( donation_id : string ) : Promise<D
             }
             const raw_stripe_data = await fetch_donation_from_stripe(tags, true)
             const donation = build_donation_from_raw_stripe_data(raw_stripe_data[1])
+
+            await upload_donation_to_database(donation.format_donation_for_upload())
             return donation
 
         } catch (error) {
@@ -29,6 +32,7 @@ export default async function fetch_donation( donation_id : string ) : Promise<D
             }
             const raw_stripe_data = await fetch_donation_from_stripe(tags, true)
             const donation = build_donation_from_raw_stripe_data(raw_stripe_data[1])
+
             return donation
 
         } catch (error) {
