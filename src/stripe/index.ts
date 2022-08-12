@@ -1,3 +1,4 @@
+import Stripe from "stripe";
 import { Cart } from "../classes/cart/Cart";
 import { Donation } from "../classes/donation/Donation";
 import { Donor } from "../classes/donors/Donor";
@@ -9,35 +10,35 @@ import { CountryList } from "../classes/utility_classes/country_list";
 import { kinship_config } from "../config";
 import { PaymentMethods } from "./enums";
 import { raw_stripe_transaction_object, StripeTags } from "./interfaces";
-const Stripe = require('stripe');
+const StripeClient = require('stripe');
 const dotenv = require('dotenv')
 dotenv.config();
 
-const stripe_client = Stripe(kinship_config.PRODUCTION_MODE ? process.env.STRIPE_LIVE_API_KEY : process.env.STRIPE_TEST_API_KEY)
+const stripe_client = StripeClient(kinship_config.PRODUCTION_MODE ? process.env.STRIPE_LIVE_API_KEY : process.env.STRIPE_TEST_API_KEY)
 
 /**
  * 
  * @section functions to fetch data from stripe
  */
 
-export async function fetch_charge_object(charge_id: string) {
+export async function fetch_charge_object(charge_id: string) : Promise<Stripe.Charge> {
     return stripe_client.charges.retrieve(charge_id)
 }
 
-export async function fetch_payment_intent_object(payment_intent_id: string) {
+export async function fetch_payment_intent_object(payment_intent_id: string) : Promise<Stripe.PaymentIntent> {
     return stripe_client.paymentIntents.retrieve(payment_intent_id)
 }
 
-export async function fetch_balance_transaction_object(balance_transaction_id: string) {
+export async function fetch_balance_transaction_object(balance_transaction_id: string) : Promise<Stripe.BalanceTransaction>  {
     return stripe_client.balanceTransactions.retrieve(balance_transaction_id)
 }
 
-export async function fetch_customer_object(stripe_customer_id: string) {
-    return stripe_client.customers.retrieve(stripe_customer_id)
+export async function fetch_customer_object(stripe_customer_id: string) : Promise<Stripe.Customer> {
+    return stripe_client.customers.retrieve(stripe_customer_id) as Promise<Stripe.Customer>
 }
 
-export async function fetch_specific_payment_method(payment_method_id: string) {
-    return stripe_client.paymentMethods.retrieve(payment_method_id)
+export async function fetch_specific_payment_method(payment_method_id: string) : Promise<Stripe.PaymentMethod>  {
+    return stripe_client.paymentMethods.retrieve(payment_method_id) as Promise<Stripe.PaymentMethod>
 }
 
 export async function fetch_payment_methods(stripe_customer_id: string, payment_method_type: PaymentMethods = PaymentMethods.CARD) {
@@ -66,28 +67,43 @@ export async function fetch_donation_from_stripe(stripe_tags: StripeTags, full_c
 
     if (!full_collection_mode) {
 
-        stripe_promises.push(fetch_payment_intent_object(stripe_tags.payment_intent_id))
-        
+        if (stripe_tags.payment_intent_id != null) { stripe_promises.push(fetch_payment_intent_object(stripe_tags.payment_intent_id)) }
         if (stripe_tags.charge_id != null) { stripe_promises.push(fetch_charge_object(stripe_tags.charge_id)) }
         if (stripe_tags.balance_transaction_id != null) { stripe_promises.push(fetch_balance_transaction_object(stripe_tags.balance_transaction_id)) }
         if (stripe_tags.payment_method_id != null) { stripe_promises.push(fetch_specific_payment_method(stripe_tags.payment_method_id)) }
         if (stripe_tags.customer_id != null) { stripe_promises.push(fetch_customer_object(stripe_tags.customer_id)) }
 
     } else {
-        const payment_intent_object = await fetch_payment_intent_object(stripe_tags.payment_intent_id)
-        const charge_object = payment_intent_object.charges.data[0]
 
-        stripe_promises.push(fetch_balance_transaction_object(charge_object.balance_transaction))
-        stripe_promises.push(fetch_specific_payment_method(charge_object.payment_method))
-        stripe_promises.push(fetch_customer_object(charge_object.customer))
+        if (!stripe_tags.charge_id && !stripe_tags.payment_intent_id) {
+            new KinshipError("Pass in either the charge id or payment intent ID to fetch a donation from Stripe", "/src/stripe/index", "fetch_donation_from_stripe", true)
+            return
+        }
+
+        let payment_intent_object: Stripe.PaymentIntent;
+        let charge_object: Stripe.Charge;
+
+        if (stripe_tags.payment_intent_id) {
+            payment_intent_object = await fetch_payment_intent_object(stripe_tags.payment_intent_id)
+            charge_object = payment_intent_object.charges.data[0]
+        } else if (stripe_tags.charge_id) {
+            charge_object = await fetch_charge_object(stripe_tags.charge_id)
+            payment_intent_object = await fetch_payment_intent_object(charge_object.payment_intent as string)
+        }
+        
+
+        stripe_promises.push(fetch_balance_transaction_object(charge_object.balance_transaction as string))
+        stripe_promises.push(fetch_specific_payment_method(charge_object.payment_method as string))
+        stripe_promises.push(fetch_customer_object(charge_object.customer as string))
 
         raw_data_from_stripe.payment_intent_object = payment_intent_object
         raw_data_from_stripe.charge_object = charge_object
 
         stripe_tags.charge_id = charge_object.id
-        stripe_tags.balance_transaction_id = charge_object.balance_transaction
-        stripe_tags.customer_id = charge_object.customer
+        stripe_tags.balance_transaction_id = charge_object.balance_transaction as string
+        stripe_tags.customer_id = charge_object.customer as string
         stripe_tags.payment_method_id = charge_object.payment_method
+
     }
 
     const stripe_results = await Promise.all(stripe_promises)

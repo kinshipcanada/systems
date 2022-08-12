@@ -38,7 +38,7 @@ export class Donation {
         fees_paid_in_cents: number,
         fees_charged_by_stripe: number,
         payment_method: Stripe.PaymentMethod,
-        stripe_payment_intent_id: string,
+        stripe_payment_intent_id?: string,
         stripe_charge_id?: string,
         stripe_balance_transaction_id?: string,
         stripe_customer_id?: string,
@@ -61,12 +61,9 @@ export class Donation {
 
     }
 
-    async fetch_donation_from_stripe(format_data: boolean = true, full_collection_mode: boolean = true) {
+    async store_donation() {
         /**
-         * @description
-         * @param full_collection_mode - if set to true, this will fetch any missing objects or fields from stripe
+         * logs donation in database
          */
-
-        return 0
     }
 }

@@ -12,3 +12,7 @@ export interface SimpleMessageResponse extends BaseApiResponse {
 export interface DonationResponse extends BaseApiResponse {
     donation: Donation
 }
+
+export interface BatchedDonationResponse extends BaseApiResponse {
+    donations: Donation[]
+}

@@ -4,7 +4,7 @@ import { Stripe } from "stripe"
  * @section interfaces: these form templates for responses from stripe
  */
 export interface StripeTags {
-    payment_intent_id: string,
+    payment_intent_id?: string,
     charge_id?: string,
     balance_transaction_id?: string,
     customer_id?: string,
