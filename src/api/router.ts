@@ -85,20 +85,8 @@ api_router.get("/donor/:id/payment_methods/list")
 
 api_router.get("/donor/:id/donations")
 
-api_router.post("/donor/create", async (req: Request, res: Response) => {
-    try {
-        const auth_0_user = req.body.body.user
-        const donor_id = await create_donor(auth_0_user)
-
-        const api_response: SimpleMessageResponse = {
-            status: 200,
-            endpoint_called: "/donors/create",
-            message: donor_id
-        }
-        
-        res.status(200).send(api_response);
-    } catch (e) {
-        console.log(e)
-        res.status(500).send(e.message);
-    }
+api_router.post("/donation/create",  async (req: Request, res: Response) => {
+    const request = req.body
+    
+    res.status(200).send({ "status": 200 });
 });
