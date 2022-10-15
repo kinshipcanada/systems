@@ -1,3 +1,3 @@
 export const kinship_config = {
-    PRODUCTION_MODE: true
+    PRODUCTION_MODE: false
 }

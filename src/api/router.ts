@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import { KinshipError } from "../classes/errors/KinshipError";
+import { create_donor } from "./functions/create_donor";
 import fetch_donation from "./functions/fetch_donation";
 import { BatchedDonationResponse, DonationResponse, SimpleMessageResponse } from "./interfaces";
 
@@ -7,6 +8,8 @@ export const api_router = express.Router();
 
 api_router.get("/", async (req: Request, res: Response) => {
     try {
+        console.log('bruh')
+
         const api_response: SimpleMessageResponse = {
             status: 200,
             endpoint_called: "/",
@@ -81,3 +84,21 @@ api_router.get("/donation/batch/:list_of_donation_ids",  async (req: Request, re
 api_router.get("/donor/:id/payment_methods/list")
 
 api_router.get("/donor/:id/donations")
+
+api_router.post("/donor/create", async (req: Request, res: Response) => {
+    try {
+        const auth_0_user = req.body.body.user
+        const donor_id = await create_donor(auth_0_user)
+
+        const api_response: SimpleMessageResponse = {
+            status: 200,
+            endpoint_called: "/donors/create",
+            message: donor_id
+        }
+        
+        res.status(200).send(api_response);
+    } catch (e) {
+        console.log(e)
+        res.status(500).send(e.message);
+    }
+});

@@ -229,3 +229,18 @@ export async function refund_payment(donation: Donation, delivery_method: Delive
         return null
     }
 }
+
+/**
+ * @section functions to create data on Stripe
+ */
+
+export async function create_stripe_customer(auth_0_user: any) {
+    return stripe_client.customers.create({
+        description: "Customer ID created on signup by Kinship API",
+        email: auth_0_user.email,
+        metadata: {
+            user_id: auth_0_user.user_id,
+            email: auth_0_user.email
+        }
+    })
+}
