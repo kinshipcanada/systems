@@ -147,7 +147,7 @@ export function build_donation_from_raw_stripe_data(stripe_data: raw_stripe_tran
             state: stripe_data.customer.address.state,
             country: stripe_data.customer.address.country == "Canada" ? CountryList.CANADA : stripe_data.customer.address.country == "United States" ? CountryList.UNITED_STATES : CountryList.UNDEFINED,
         }
-    }, stripe_data.charge_object.metadata.user_id ? stripe_data.charge_object.metadata.user_id : null)
+    }, (stripe_data.customer.metadata != null && stripe_data.customer.metadata != undefined) ? stripe_data.customer.metadata.user_id : null)
 
     const amount_in_cents = stripe_data.charge_object.amount_captured
     const native_currency = stripe_data.charge_object.currency == "cad" ? CountryList.CANADA : stripe_data.charge_object.currency == "usd" ? CountryList.UNITED_STATES : CountryList.UNDEFINED

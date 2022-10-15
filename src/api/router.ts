@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import { KinshipError } from "../classes/errors/KinshipError";
+import create_donation from "./functions/create_donation";
 import { create_donor } from "./functions/create_donor";
 import fetch_donation from "./functions/fetch_donation";
 import { BatchedDonationResponse, DonationResponse, SimpleMessageResponse } from "./interfaces";
@@ -87,6 +88,11 @@ api_router.get("/donor/:id/donations")
 
 api_router.post("/donation/create",  async (req: Request, res: Response) => {
     const request = req.body
+    const charge_id = request.data.object.id
+
     
-    res.status(200).send({ "status": 200 });
+    const donation = await create_donation(request.data.object.id)
+
+    console.log(donation)
+    res.status(200).send({ "status": 200, donation: donation });
 });
