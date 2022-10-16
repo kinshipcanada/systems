@@ -7,25 +7,59 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model donors {
-  id                   String     @id
+model donations {
+  id                            BigInt          @id @default(autoincrement())
+  donation_logged               DateTime?       @default(now()) @db.Timestamp(6)
+  donation_created              DateTime?       @db.Timestamp(6)
+  donor                         String?         @db.Uuid
+  email                         String?
+  phone_number                  BigInt?
+  amount_in_cents               BigInt?
+  native_amount_in_cents        BigInt?
+  fees_covered                  Boolean?
+  fees_covered_in_cents         BigInt?
+  fees_charged_by_stripe        BigInt?
+  transaction_successful        Boolean?
+  transaction_refunded          Boolean?
+  payment_method                Json?           @db.Json
+  donation_causes               Json?           @db.Json
+  stripe_payment_intent_id      String?
+  stripe_charge_id              String?
+  stripe_balance_transaction_id String?
+  stripe_customer_id            String?
+  address_line_address          String?
+  address_state                 String?
+  address_city                  String?
+  address_postal_code           String?
+  address_country               country?
+  native_currency               currencies?
+  donor_profiles                donor_profiles? @relation(fields: [donor], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model donor_profiles {
+  id                   String      @id @db.Uuid
+  created_at           DateTime?   @default(now()) @db.Timestamptz(6)
   first_name           String?
   last_name            String?
-  email                String
-  phone_number         String?    @db.VarChar(20)
-  country              countries?
-  stripe_customer_id   String?
-  email_verified       Boolean?
-  last_ip              String?
-  created_at           DateTime?  @db.Timestamp(6)
+  stripe_customer_ids  Json?       @default("[]") @db.Json
+  email                String?
+  phone_number         BigInt?
+  address_country      country?
   address_line_address String?
   address_postal_code  String?
   address_city         String?
   address_state        String?
-  address_country      countries?
+  admin                Boolean?    @default(false)
+  partner              Boolean?    @default(false)
+  donations            donations[]
 }
 
-enum countries {
+enum country {
   ca
   us
+}
+
+enum currencies {
+  cad
+  usd
 }

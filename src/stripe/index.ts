@@ -135,8 +135,8 @@ export async function fetch_donation_from_stripe(stripe_tags: StripeTags, full_c
 
 export function build_donation_from_raw_stripe_data(stripe_data: raw_stripe_transaction_object) {
     const donor = new Donor({
-        first_name: stripe_data.charge_object.metadata.custom_first_name ? stripe_data.charge_object.metadata.custom_first_name : stripe_data.customer.name.split(" ")[0],
-        last_name: stripe_data.charge_object.metadata.custom_last_name ? stripe_data.charge_object.metadata.custom_last_name : stripe_data.customer.name.split(" ").slice(-1)[0],
+        first_name: stripe_data.charge_object.metadata.custom_first_name ? stripe_data.charge_object.metadata.custom_first_name : stripe_data.customer.metadata.first_name as string,
+        last_name: stripe_data.charge_object.metadata.custom_last_name ? stripe_data.charge_object.metadata.custom_last_name : stripe_data.customer.metadata.first_name as string,
         stripe_cus_id: stripe_data.customer.id,
         email: stripe_data.customer.email,
         phone_number: parseInt(stripe_data.customer.phone),

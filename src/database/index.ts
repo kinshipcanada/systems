@@ -5,7 +5,7 @@ require('dotenv').config();
 
 const database = require('knex')({
     client: "pg",
-    connection: process.env.PG_CONNECTION_STRING
+    connection: process.env.DATABASE_URL
 })
 
 export function upload_donation_to_database(donation: DatabaseDonation) : Promise<any> {

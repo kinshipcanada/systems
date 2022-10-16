@@ -4,6 +4,9 @@ import { build_donation_from_raw_stripe_data, fetch_donation_from_stripe } from 
 import { StripeTags } from "../../stripe/interfaces";
 import { isValidUUIDV4 as verify_uuid } from 'is-valid-uuid-v4';
 import { upload_donation_to_database } from "../../database";
+import { KinshipNotification } from "../../classes/notifications/Notification";
+import { NotificationType } from "../../classes/notifications/notification_types";
+import { DeliveryMethod } from "../../classes/notifications/delivery_methods";
 
 export default async function create_donation( donation_id : string ) : Promise<Donation> {
     
@@ -17,7 +20,9 @@ export default async function create_donation( donation_id : string ) : Promise<
             const donation = build_donation_from_raw_stripe_data(raw_stripe_data[1])
 
             await upload_donation_to_database(donation.format_donation_for_upload())
-            
+            const notification =  new KinshipNotification(NotificationType.DONATION_MADE, donation, donation.donor)
+
+            await notification.send(DeliveryMethod.EMAIL)
             return donation
 
         } catch (error) {

@@ -117,8 +117,6 @@ export class Donation {
             address_state: this.donor.address.state
         }
 
-        console.log(formatted_donation)
-
         return formatted_donation
     }
 }

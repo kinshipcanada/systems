@@ -9,7 +9,8 @@ import { Templates } from "./Templates";
 import { v4 as uuidv4 } from 'uuid';
 import { KinshipError } from "../errors/KinshipError";
 const twilio = require('twilio')
-const sendgrid = require('@sendgrid/mail')
+const postmark = require("postmark");
+
 require('dotenv').config();
 
 export class KinshipNotification extends KinshipEvent {
@@ -59,16 +60,24 @@ export class KinshipNotification extends KinshipEvent {
 
         } else if (method == DeliveryMethod.EMAIL) {
 
-            sendgrid.setApiKey(process.env.SENDGRID_API_KEY)
+            const client = new postmark.ServerClient(process.env.POSTMARK_API_KEY);
 
-            const message = await sendgrid.send({
-                to: this.donor.email,
-                from: process.env.SENDGRID_FROM_EMAIL,
-                subject: template.email_subject,
-                text: template.email_body
-            })
+            console.log("SENDING TO: ", this.donor.email)
+            // const message = await sendgrid.send({
+            //     to: this.donor.email,
+            //     from: process.env.SENDGRID_FROM_EMAIL,
+            //     subject: template.email_subject,
+            //     text: template.email_body
+            // })
 
-            this.log_event(message[0].statusCode)
+            await client.sendEmail({
+                "From": process.env.SENDGRID_FROM_EMAIL,
+                "To": this.donor.email,
+                "Subject": template.email_subject,
+                "TextBody": template.email_body
+            });
+
+            this.log_event("Sent email to " + this.donor.email);
             return
 
         }
